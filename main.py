@@ -5,17 +5,33 @@ import yt_dlp
 import asyncio
 import os
 from dotenv import load_dotenv
+from flask import Flask # TAMBAHKAN INI
+from threading import Thread # TAMBAHKAN INI
+
+# --- Bagian Web Server untuk UptimeRobot ---
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot is alive!"
+
+def run_web_server():
+  app.run(host='0.0.0.0', port=8080)
+
+def start_web_server_thread():
+    t = Thread(target=run_web_server)
+    t.start()
+# -------------------------------------------
+
 
 # Muat variabel dari Secrets (Environment Variables)
 load_dotenv()
 
 # --- Konfigurasi ---
-# Ambil konfigurasi dari environment variables
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
 SPOTIPY_CLIENT_SECRET = os.getenv("SPOTIPY_CLIENT_SECRET")
 
-# Cek apakah semua variabel ada
 if not all([DISCORD_TOKEN, SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET]):
     print("Error: Pastikan semua variabel (DISCORD_TOKEN, SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET) sudah diatur di menu 'Secrets'.")
     exit()
@@ -94,7 +110,10 @@ async def leave(ctx: discord.ApplicationContext):
     else:
         await ctx.respond("Aku sedang tidak ada di voice channel.", ephemeral=True)
 
+# Jalankan server web dan bot
 if sp:
+    start_web_server_thread() # TAMBAHKAN INI: Jalankan web server di thread terpisah
     bot.run(DISCORD_TOKEN)
 else:
     print("Bot tidak dapat dijalankan karena gagal terhubung ke Spotify.")
+            
